@@ -1,0 +1,462 @@
+<ActionBar class="action-bar" title="CHEO Neonatal Stats Tracker">
+
+    <ActionItem *ngIf="lineView" [text]="lineGraphTime" ios.position="right"
+        (tap)="changeLineTime()"></ActionItem>
+    <ActionItem [text]="stateUI" (tap)="pauseUI()" ios.position="right">
+    </ActionItem>
+    <ActionItem text="Menu" (tap)="menuToggle()" ios.position="left"
+        (tap)="dataCollect()"></ActionItem>
+</ActionBar>
+
+<ScrollView *ngIf="menu" orientation="vertical">
+
+    <FlexboxLayout flexDirection="column">
+
+        <FlexboxLayout class="menu-labels" flexDirection="row">
+            <Label [text]="stateUI" flexGrow="1">
+            </Label>
+            <Switch (tap)="menuItemToggle('pause')" (tap)="menuToggle()"
+                (tap)="pauseUI()" [checked]="pause" flexGrow="1">
+            </Switch>
+        </FlexboxLayout>
+        <!--
+    <Button [text]="lineGraphTime" class="menu-spacing"
+        (tap)="changeLineTime()">
+    </Button> 
+    -->
+        <FlexboxLayout class="menu-labels" flexDirection="row">
+            <Label text="Toggle Vibration Line Graph" flexGrow="1">
+            </Label>
+            <Switch (tap)="menuToggle()" (tap)="toggleLineGraphs('vibration')"
+                (tap)="menuItemToggle('vibration')" [checked]="vibrationLine"
+                flexGrow="1">
+            </Switch>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="menu-labels" flexDirection="row">
+            <Label text="Toggle Temperature Line Graph" flexGrow="1">
+            </Label>
+            <Switch (tap)="menuToggle()" (tap)="menuItemToggle('temperature')"
+                (tap)="toggleLineGraphs('temperature')"
+                [checked]="temperatureLine" flexGrow="1">
+            </Switch>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="menu-labels" flexDirection="row">
+            <Label text="Toggle Sound Line Graph" flexGrow="1">
+            </Label>
+            <Switch (tap)="menuToggle()" (tap)="menuItemToggle('noise')"
+                (tap)="toggleLineGraphs('noise')" [checked]="noiseLine"
+                flexGrow="1"></Switch>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="threshold-labels" flexDirection="row">
+            <Label text="Enter Minimum Vibration Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="vibrationMin" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+            <Label text="Enter Maximum Vibration Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="vibrationMax" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="threshold-labels" flexDirection="row">
+            <Label text="Enter Minimum Temperature Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="temperatureMin" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+            <Label text="Enter Maximum Temperauture Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="temperatureMax" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="threshold-labels" flexDirection="row">
+            <Label text="Enter Minimum Sound Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="soundMin" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+            <Label text="Enter Maximum Sound Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="soundMax" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="threshold-labels" flexDirection="row">
+            <Label text="Enter Minimum Pressure Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="pressureMin" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+            <Label text="Enter Maximum Pressure Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="pressureMax" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+        </FlexboxLayout>
+
+        <FlexboxLayout class="threshold-labels" flexDirection="row">
+            <Label text="Enter Minimum Humidity Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="humidityMin" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+            <Label text="Enter Maximum Humidity Value" flexGrow="1">
+            </Label>
+            <TextField [(ngModel)]="humidityMax" hint="Enter text..."
+                flexGrow="1">
+            </TextField>
+        </FlexboxLayout>
+
+
+    </FlexboxLayout>
+</ScrollView>
+
+
+<StackLayout [ngClass]="!menu ? 'page' : 'page-hide'">
+
+    <Label *ngIf="statusUI" [text]="statusUI" class="UI-status"> </Label>
+
+    <!-- Live sensor values displayed above bar graphs and gauges -->
+    <FlexboxLayout flexDirection="row"
+        [ngClass]="!lineView ? 'graph-values' : 'hide-value-display'">
+
+        <Label [text]="data_db[2]" [color]="vibrationStatus" flexGrow="1">
+        </Label>
+        <Label [text]="data_db[3]" [color]="temperatureStatus" flexGrow="1">
+        </Label>
+        <Label [text]="data_db[4]" [color]="noiseStatus" flexGrow="1">
+        </Label>
+        <Label [text]="data_db[5]" [color]="pressureStatus" flexGrow="1">
+        </Label>
+        <Label [text]="data_db[6]" [color]="humidityStatus" flexGrow="1">
+        </Label>
+    </FlexboxLayout>
+
+    <!-- Gauge styling and sensor assigning, only enabled if "gaugeView == true" -->
+    <FlexboxLayout height="75%" width="100%" flexDirection="row"
+        *ngIf="gaugeView"
+        [ngClass]="!lineView ? 'graph-grid' : 'hide-graph-grid'">
+        <RadRadialGauge class="gauge-one">
+
+            <RadialScale tkRadialGaugeScales minimum="0" maximum="50"
+                radius="0.90">
+                <ScaleStyle tkRadialScaleStyle majorTicksCount="3"
+                    minorTicksCount="9" lineThickness="15" labelsCount="5"
+                    ticksOffset="0"></ScaleStyle>
+
+                <RadialBarIndicator tkRadialScaleIndicators minimum="0"
+                    [maximum]="vibrationMin" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#9DCA56"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="vibrationMin" [maximum]="vibrationMax"
+                    location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#F0C44D"></BarIndicatorStyle>
+                </RadialBarIndicator>
+
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="vibrationMax" maximum="50" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#A7010E"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialNeedle tkRadialScaleIndicators
+                    [value]="this.data_db[2]">
+                </RadialNeedle>
+            </RadialScale>
+        </RadRadialGauge>
+
+
+        <RadRadialGauge class="gauge-two">
+            <RadialScale tkRadialGaugeScales minimum="0" maximum="50"
+                radius="0.90">
+                <ScaleStyle tkRadialScaleStyle majorTicksCount="3"
+                    minorTicksCount="9" lineThickness="15" labelsCount="5"
+                    ticksOffset="0" fillColor="rgb(132, 132, 132)">
+                </ScaleStyle>
+
+                <RadialBarIndicator tkRadialScaleIndicators minimum="0"
+                    [maximum]="temperatureMin" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#9DCA56"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="temperatureMin" [maximum]="temperatureMax"
+                    location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#F0C44D"></BarIndicatorStyle>
+                </RadialBarIndicator>
+
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="temperatureMax" maximum="50" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#A7010E"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialNeedle tkRadialScaleIndicators
+                    [value]="this.data_db[3]">
+                </RadialNeedle>
+            </RadialScale>
+        </RadRadialGauge>
+
+
+        <RadRadialGauge class="gauge-three">
+            <RadialScale tkRadialGaugeScales minimum="0" maximum="50"
+                radius="0.90">
+                <ScaleStyle tkRadialScaleStyle majorTicksCount="3"
+                    minorTicksCount="9" lineThickness="15" labelsCount="5"
+                    ticksOffset="0"></ScaleStyle>
+
+                <RadialBarIndicator tkRadialScaleIndicators minimum="0"
+                    [maximum]="soundMin" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#9DCA56"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="soundMin" [maximum]="soundMax" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#F0C44D"></BarIndicatorStyle>
+                </RadialBarIndicator>
+
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="soundMax" maximum="50" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#A7010E"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialNeedle tkRadialScaleIndicators
+                    [value]="this.data_db[4]">
+                </RadialNeedle>
+            </RadialScale>
+        </RadRadialGauge>
+        <RadRadialGauge class="gauge-four">
+            <RadialScale tkRadialGaugeScales minimum="0" maximum="50"
+                radius="0.90">
+                <ScaleStyle tkRadialScaleStyle majorTicksCount="3"
+                    minorTicksCount="9" lineThickness="15" labelsCount="5"
+                    ticksOffset="0"></ScaleStyle>
+
+                <RadialBarIndicator tkRadialScaleIndicators minimum="0"
+                    [maximum]="pressureMin" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#9DCA56"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="pressureMin" [maximum]="pressureMax"
+                    location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#F0C44D"></BarIndicatorStyle>
+                </RadialBarIndicator>
+
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="pressureMax" maximum="50" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#A7010E"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialNeedle tkRadialScaleIndicators
+                    [value]="this.data_db[5]">
+                </RadialNeedle>
+            </RadialScale>
+        </RadRadialGauge>
+        <RadRadialGauge class="gauge-five">
+            <RadialScale tkRadialGaugeScales minimum="0" maximum="50"
+                radius="0.90">
+                <ScaleStyle tkRadialScaleStyle majorTicksCount="3"
+                    minorTicksCount="9" lineThickness="15" labelsCount="5"
+                    ticksOffset="0"></ScaleStyle>
+
+                <RadialBarIndicator tkRadialScaleIndicators minimum="0"
+                    [maximum]="humidityMin" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#9DCA56"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="humidityMin" [maximum]="humidityMax"
+                    location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#F0C44D"></BarIndicatorStyle>
+                </RadialBarIndicator>
+
+                <RadialBarIndicator tkRadialScaleIndicators
+                    [minimum]="humidityMax" maximum="50" location="0.97">
+                    <BarIndicatorStyle tkRadialBarIndicatorStyle
+                        fillColor="#A7010E"></BarIndicatorStyle>
+                </RadialBarIndicator>
+                <RadialNeedle tkRadialScaleIndicators
+                    [value]="this.data_db[6]">
+                </RadialNeedle>
+            </RadialScale>
+        </RadRadialGauge>
+
+    </FlexboxLayout>
+    <!-- End of gauge styling -->
+
+    <FlexboxLayout flexDirection="column"
+        [ngClass]="lineView ? 'line-graph-grid' : 'hide-graph-grid'" rows="*"
+        [height]="lineGraphHeight">
+
+        <RadCartesianChart [height]="vibrationHeight" row="0"
+            style="font-size: 20;"
+            [ngClass]="vibrationVisible ? 'line-graph-grid' : 'hide-graph-grid'">
+            <CategoricalAxis tkCartesianHorizontalAxis allowZoom="true"
+                allowPan="true" [majorTickInterval]="lineGraphTicks">
+            </CategoricalAxis>
+            <!-- labelFitMode="Rotate" -->
+            <LinearAxis tkCartesianVerticalAxis allowZoom="true"
+                allowPan="true">
+            </LinearAxis>
+
+            <LineSeries tkCartesianSeries seriesName="vibration"
+                title="Vibration Series" legendTitle="Vibration Series"
+                [items]="categoricalSource2" categoryProperty="time"
+                valueProperty="vibration">
+            </LineSeries>
+
+            <Palette tkCartesianPalette seriesName="vibration">
+                <PaletteEntry tkCartesianPaletteEntry fillColor="#4d88ff"
+                    strokeColor="#4d88ff" line-hidden="true"
+                    ticks-hidden="true">
+                </PaletteEntry>
+            </Palette>
+
+            <RadLegendView tkCartesianLegend position="Top" height="0"
+                enableSelection="false">
+            </RadLegendView>
+
+        </RadCartesianChart>
+
+        <RadCartesianChart [height]="temperatureHeight" row="0"
+            style="font-size: 20;"
+            [ngClass]="temperatureVisible ? 'line-graph-grid' : 'hide-graph-grid'">
+            <CategoricalAxis tkCartesianHorizontalAxis allowZoom="true"
+                allowPan="true" [majorTickInterval]="lineGraphTicks">
+            </CategoricalAxis>
+
+            <LinearAxis tkCartesianVerticalAxis allowZoom="true"
+                allowPan="true" color="white">
+            </LinearAxis>
+
+            <LineSeries tkCartesianSeries seriesName="temperature"
+                legendTitle="Temperature Series" [items]="categoricalSource2"
+                categoryProperty="time" valueProperty="temperature">
+            </LineSeries>
+
+            <Palette tkCartesianPalette seriesName="temperature">
+                <PaletteEntry tkCartesianPaletteEntry fillColor="#FCD92B"
+                    strokeColor="#FCD92B"></PaletteEntry>
+            </Palette>
+
+            <RadLegendView tkCartesianLegend position="Top" title=""
+                height="50" enableSelection="true">
+            </RadLegendView>
+
+        </RadCartesianChart>
+
+        <RadCartesianChart [height]="noiseHeight" row="0"
+            style="font-size: 20;"
+            [ngClass]="noiseVisible ? 'line-graph-grid' : 'hide-graph-grid'">
+            <CategoricalAxis tkCartesianHorizontalAxis allowZoom="true"
+                allowPan="true" [majorTickInterval]="lineGraphTicks">
+            </CategoricalAxis>
+
+            <LinearAxis tkCartesianVerticalAxis allowZoom="true"
+                allowPan="true" color="white">
+            </LinearAxis>
+
+            <LineSeries tkCartesianSeries seriesName="noise"
+                legendTitle="Sound series" [items]="categoricalSource2"
+                categoryProperty="time" valueProperty="noise">
+            </LineSeries>
+
+            <Palette tkCartesianPalette seriesName="noise">
+                <PaletteEntry tkCartesianPaletteEntry fillColor="#47BF36"
+                    strokeColor="#47BF36"></PaletteEntry>
+            </Palette>
+
+            <RadLegendView tkCartesianLegend position="Top" title=""
+                height="50" enableSelection="true">
+            </RadLegendView>
+
+        </RadCartesianChart>
+
+        <!--
+        <RadCartesianChart row="0" style="font-size: 20;">
+            <CategoricalAxis tkCartesianHorizontalAxis>
+            </CategoricalAxis>
+
+            <LinearAxis tkCartesianVerticalAxis>
+            </LinearAxis>
+
+            <LineSeries tkCartesianSeries seriesName="pressure"
+                legendTitle="Pressure series" [items]="categoricalSource2"
+                categoryProperty="time" valueProperty="pressure">
+            </LineSeries>
+
+        </RadCartesianChart>
+        <RadCartesianChart row="0" style="font-size: 20;">
+            <CategoricalAxis tkCartesianHorizontalAxis>
+            </CategoricalAxis>
+
+            <LinearAxis tkCartesianVerticalAxis>
+            </LinearAxis>
+
+            <LineSeries tkCartesianSeries seriesName="humidity"
+                legendTitle="Humidity series" [items]="categoricalSource2"
+                categoryProperty="time" valueProperty="humidity">
+            </LineSeries>
+
+        </RadCartesianChart>
+        -->
+    </FlexboxLayout>
+
+    <!-- Sensor labels for gauges, not needed for bar graphs due to x-axis -->
+    <FlexboxLayout *ngIf="gaugeView" flexDirection="row"
+        [ngClass]="!lineView ? 'value-display' : 'hide-value-display'">
+        <Label text="Vibration" flexGrow="1"></Label>
+        <Label text="Temperature" flexGrow="1"></Label>
+        <Label text="Sound Level" flexGrow="1"></Label>
+        <Label text="Air Pressure" flexGrow="1"></Label>
+        <Label text="Humidity" flexGrow="1"></Label>
+    </FlexboxLayout>
+
+    <!-- Bar graph assigning, only shown if "gaugeView == false", otherwise DOM element hidden behind other elements -->
+    <GridLayout
+        [ngClass]="!gaugeView && !lineView  ? 'graph-grid' : 'hide-graph-grid'">
+
+        <RadCartesianChart row="0">
+            <CategoricalAxis tkCartesianHorizontalAxis style="font-size: 20"
+                lineHidden="true" ticksHidden="true">
+            </CategoricalAxis>
+
+            <LinearAxis tkCartesianVerticalAxis color="transparent"
+                lineHidden="true" ticksHidden="true">
+            </LinearAxis>
+
+            <BarSeries [showLabels]="toggleBarLabels" seriesName="Bar"
+                tkCartesianSeries [items]="categoricalSource"
+                categoryProperty="Sensor" valueProperty="Amount"
+                paletteMode="Item">
+            </BarSeries>
+
+        </RadCartesianChart>
+    </GridLayout>
+
+    <!-- Static dock, always visible, start, view, and stop button container (tap)="startAccelerometer()"-->
+    <FlexboxLayout class="dock" flexDirection="row">
+
+        <Button class="start-button" text="Start" (tap)="startSensors()"
+            flexGrow="0.5"></Button>
+        <Button class="view-button" [text]="currentView" text="No View"
+            (tap)="changeViews()" flexGrow="0.5">
+        </Button>
+        <Button class="stop-button" text="Stop" (tap)="stopSensors()"
+            flexGrow="0.5"></Button>
+    </FlexboxLayout>
+</StackLayout>
