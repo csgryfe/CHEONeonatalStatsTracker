@@ -58,7 +58,6 @@ export class HomeComponent implements OnInit {
     gaugeView: boolean;
     lineView: boolean;
     threshold: boolean;
-    db: boolean;
     currentView: string;
 
     lineGraphTime: string;
@@ -138,12 +137,13 @@ export class HomeComponent implements OnInit {
 
     startSensors(): void {
 
-        if (this.x0 == undefined) {
+        if (this.x0 == undefined) { // Condition tracking the first time the app is started after opening
 
-            this.stateUI = "Pause Screen";
-            this.currentView = "View: Bar Graph";
-            this.x0 = 0;
+            this.stateUI = "Pause Screen"; // Set the UI state to play, set button label to "Pause"
+            this.currentView = "View: Bar Graph"; // Initiate the UI view to "Bar Graph"
+            this.x0 = 0; // Set the first start tracking variable to something defined
 
+            // Initiate and start each individual thread all three functions
             const sourceESP = interval(1000); // Set a 1 second interval (1000ms)
             this.subscriptionESP = sourceESP.subscribe(val => this.opensnackESP());
             this.intervalIdESP = setInterval(this.opensnackESP(), 100000);
@@ -156,8 +156,9 @@ export class HomeComponent implements OnInit {
             this.subscriptionUI = sourceUI.subscribe(val => this.opensnackUI());
             this.intervalIdUI = setInterval(this.opensnackUI(), 100000);
 
-        } else {
+        } else { // Executes if the start button is pressed but has been pressed in the past
 
+            // Stop all threads
             this.subscriptionESP && this.subscriptionESP.unsubscribe();
             clearInterval(this.intervalIdESP);
 
@@ -167,6 +168,7 @@ export class HomeComponent implements OnInit {
             this.subscriptionUI && this.subscriptionUI.unsubscribe();
             clearInterval(this.intervalIdUI);
 
+            // Reset all threads
             const sourceESP = interval(1000); // Set a 2 second interval (2000ms)
             this.subscriptionESP = sourceESP.subscribe(val => this.opensnackESP());
             this.intervalIdESP = setInterval(this.opensnackESP(), 100000);
@@ -203,45 +205,44 @@ export class HomeComponent implements OnInit {
     }
 
 
-    public insert() {
-/*
-        this.x0 = this.x0;
-        this.x1 = Math.floor(Math.random() * (15 - 25) + 15);
-        this.x2 = Math.floor(Math.random() * (25 - 35) + 25);
-        this.x3 = Math.floor(Math.random() * (25 - 35) + 25);
-        this.x4 = Math.floor(Math.random() * (25 - 35) + 25);
-        this.x5 = Math.floor(Math.random() * (25 - 35) + 25);
-*/
+
+    public insert() { // Insert into database from the ESP JSON object
+
+        /* Uncomment this to insert random variables instead of connecting to ESP
+               this.x0 = this.x0;
+               this.x1 = Math.floor(Math.random() * (15 - 25) + 15);
+               this.x2 = Math.floor(Math.random() * (25 - 35) + 25);
+               this.x3 = Math.floor(Math.random() * (25 - 35) + 25);
+               this.x4 = Math.floor(Math.random() * (25 - 35) + 25);
+               this.x5 = Math.floor(Math.random() * (25 - 35) + 25);
+               //this.x0 = this.x0 + 1;
+       */
         
-        var JSONObject = JSON.parse(this.rawJSONStream);
+        // Comment out the below section is only using random values from above code
+        
+        var JSONObject = JSON.parse(this.rawJSONStream); // Parse the JSON object sent from the ESP in HTTP
+        // Set global variables to each sensor value in the JSON object
         this.x0 = JSONObject["time"];
         this.x1 = JSONObject["vibration"];
         this.x2 = JSONObject["temperature"];
         this.x3 = JSONObject["sound"];
         this.x4 = JSONObject["pressure"];
         this.x5 = JSONObject["humidity"];
+        // Commend out to here if necessary
 
-        //alert('Vibration: '+vib+' Temperature: '+temp+' Noise: '+no+' Air Pressure: '+air+' Humidity: '+hum);
-        //alert(JSON.parse(this.rawJSONStream).time);
-        //alert(this.rawJSONStream.time);
-        //console.log("Element 0 ", this.rawJSONStream[0], "Element 1 ", this.rawJSONStream[1], "Element 2 ", this.rawJSONStream[2], "Element 3 ", this.rawJSONStream[3], "Element 4 ", this.rawJSONStream[4], "Element 5 ", this.rawJSONStream[5]);
-        //alert(JSON.stringify(this.rawJSONStream.time).toString());
-
+        // Create date and time to append to JSON data
         var currentDate = new Date();
         var timestamp = currentDate.getTime();
         var year = currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
         var time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds() + "." + (currentDate.getTime() % 1000);
+
+        // Insert JSON data and date and time into database
         this.database.execSQL("INSERT INTO measurements_SSS (dateValues, timeValues, vibrationValues,temperatureValues,noiseValues,airValues,humidityValues, timing) VALUES (?,?,?,?,?,?,?,?)", [year, this.x0, this.x1, this.x2, this.x3, this.x4, this.x5, timestamp]).then(id => {
-            //to here
-/*
-            this.database.execSQL("INSERT INTO measurements_SSS (timeValues,vibrationValues,temperatureValues,noiseValues,airValues,humidityValues) VALUES (?,?,?,?,?,?)", [this.x0, this.x1, this.x2, this.x3, this.x4, this.x5]).then(id => {
-                */this.fetch();
+            this.fetch();
         }, error => {
             console.log("Error inserting into db: ", error)
         });
 
-        this.db = true;
-        //this.x0 = this.x0 + 1;
     }
 
     public fetch() {
@@ -265,17 +266,19 @@ export class HomeComponent implements OnInit {
 
     }
 
-    public fetchUIData() {
+    public fetchUIData() { // Fetch Function for UI Elements
 
         this.database.all("SELECT * FROM measurements_SSS ").then(rows => {
-            this.db_container = [];
-            this.data_db = [0, 0, 0, 0, 0, 0];
 
-            for (let i = 0; i < rows.length; i++) {
+            this.db_container = []; // Create an empty array to store past sensor values locally, each index is one unit time
+            this.data_db = [0, 0, 0, 0, 0, 0]; // Create and populate array with zeros to store each unit time with sensor values
+
+            for (let i = 0; i < rows.length; i++) { // Iterate through all rows of database
                 this.data_db = [];
-                this.data_db.push(rows[i][1], rows[i][2], rows[i][3], rows[i][4], rows[i][5], rows[i][6], rows[i][7]);
-                this.db_container.unshift(this.data_db);
+                this.data_db.push(rows[i][1], rows[i][2], rows[i][3], rows[i][4], rows[i][5], rows[i][6], rows[i][7]); // Populate array with sensor values
+                this.db_container.unshift(this.data_db); // Populate container with sensor data, newest data at front
 
+                // Threshold logic for changing visual indicator of min and max thresholds
                 if (this.data_db[2] >= this.vibrationMin && this.data_db[2] < this.vibrationMax) {
                     this.vibrationStatus = "Yellow";
                 } else if (this.data_db[2] >= this.vibrationMax) {
@@ -316,6 +319,7 @@ export class HomeComponent implements OnInit {
                     this.humidityStatus = "White";
                 }
 
+                // Populate categorical source object for graphs
                 this.categoricalSource = [
                     { Sensor: "Vibration", Amount: this.data_db[2] },
                     { Sensor: "Temperature", Amount: this.data_db[3] },
@@ -355,20 +359,19 @@ export class HomeComponent implements OnInit {
 
     }
 
-    public lineGraphStore(data_container) {
+    public lineGraphStore(data_container) { // Function to facilitate the storage of data for the linegraph
 
         let data_length = data_container.length;
         this.data_points = [];
         var temp_data;
 
         for (let i = 0; i < data_container.length && i < this.lineGraphTimeNum; i++) {
-            //console.log("Iteration: ", i, "\n")
+
             temp_data = { time: data_container[i][1], vibration: data_container[i][2], temperature: data_container[i][3], noise: data_container[i][4], pressure: data_container[i][5], humidity: data_container[i][6] };
-            //console.log("date: ", data_container[i][0], "time: ", data_container[i][1], "vibration: ", data_container[i][2], "temperature: ", data_container[i][3], "noise: ", data_container[i][4], "pressure: ", data_container[i][5], "humidity ", data_container[i][6], "Timing ", data_container[i][7]);
             this.data_points.unshift(temp_data);
         }
 
-        this.categoricalSource2 = this.data_points;
+        this.categoricalSource2 = this.data_points; // Set the catagorical source for the line graph to all the past data
 
     }
 
@@ -541,27 +544,33 @@ export class HomeComponent implements OnInit {
 
     }
 
-    public changeLineTime() {
+    public changeLineTime() { // Function to change the current time displayed label in line graph view
+
         if (this.lineGraphTime == "10 Seconds") {
             this.lineGraphTime = "30 Seconds";
             this.lineGraphTicks = "5";
             this.lineGraphTimeNum = 30;
+
         } else if (this.lineGraphTime == "30 Seconds") {
             this.lineGraphTime = "1 Minute";
             this.lineGraphTicks = "10";
             this.lineGraphTimeNum = 60;
+
         } else if (this.lineGraphTime == "1 Minute") {
             this.lineGraphTime = "30 Minutes";
             this.lineGraphTicks = "20";
             this.lineGraphTimeNum = 1800;
+
         } else if (this.lineGraphTime == "30 Minutes") {
             this.lineGraphTime = "1 Hour";
             this.lineGraphTicks = "50";
             this.lineGraphTimeNum = 3600;
+
         } else if (this.lineGraphTime == "1 Hour") {
             this.lineGraphTime = "All Time";
             this.lineGraphTicks = "100";
             this.lineGraphTimeNum = Infinity;
+
         } else {
             this.lineGraphTime = "10 Seconds";
             this.lineGraphTicks = "1";
@@ -570,31 +579,38 @@ export class HomeComponent implements OnInit {
         this.fetchUIData();
     }
 
-    public pauseUI() {
+    public pauseUI() { // Function to pause all UI elements and display "Paused Screen" label
+
         if (this.stateUI == "Play Screen") {
             this.stateUI = "Pause Screen";
             this.lineGraphHeight = "90%";
             this.statusUI = null;
             alert("Display is now live.\n")
         } else {
+
             if (this.x0 != undefined) {
+
                 this.stateUI = "Play Screen"
                 this.fetchUIData();
                 this.lineGraphHeight = "80%";
                 alert("Display has been paused.\nData is still being collected.\n");
                 this.statusUI = "Screen is Currently Paused"
             } else {
+
                 alert("Cannot Pause Screen Since the Processes Have Not Been Started.")
             }
         }
     }
 
-    public menuToggle() {
+    public menuToggle() { // Open or close menu
         this.menu = !this.menu;
     }
-    public toggleLineGraphs(graphVisible) {
 
-        if (graphVisible == "vibration") {
+    public toggleLineGraphs(graphVisible) { // Line graph visibility function
+
+        // Logic to toggle which line graph is visible and set the sizing for that element based on how many are enabled
+
+        if (graphVisible == "vibration") { 
             if (!this.vibrationVisible && !this.temperatureVisible && !this.noiseVisible) {
                 this.vibrationHeight = "100%"; this.vibrationVisible = true;
                 this.temperatureVisible = false;
@@ -722,23 +738,23 @@ export class HomeComponent implements OnInit {
     }
 
 
-    public async dataCollect() {
+    public async dataCollect() { // Function to asynchronously run and request data from the microcontroller
 
         httpModule.request({
-            url: "http://192.168.1.49/app",
-            method: "GET"
+            url: "http://192.168.1.49/app", // Address that the microcontroller is set to
+            method: "GET" // Type of request
         }).then((response) => {
-            this.rawJSONStream = JSON.stringify(response);
+            this.rawJSONStream = JSON.stringify(response); // JSON stream stored to global variable from "response"
 
         }, (e) => {
-            console.log(e);
+            console.log(e); // Log any errors to console
         });
 
-        console.log("Hit DataCollect");
     }
 
 
-    ngOnInit() {
+    ngOnInit() { // All required variables that need to be initialized when the app opens
+
         this.vibrationStatus = "White";
         this.temperatureStatus = "White";
         this.noiseStatus = "White";
@@ -775,7 +791,8 @@ export class HomeComponent implements OnInit {
 
     }
 
-    menuItemToggle = function (value) {
+    menuItemToggle = function (value) { // Function to set toggle switched in menu
+
         if (value == "pause") {
             this.pause = !this.pause;
 
@@ -795,17 +812,15 @@ export class HomeComponent implements OnInit {
 
     }
 
-    opensnack() {
+    opensnack() { // Thread to insert into database
         this.insert();
-        //startDataCollection
     }
-    opensnackUI() {
+    opensnackUI() { // Thread to fetch data for UI elements
         if (this.stateUI == "Pause Screen") {
             this.fetchUIData();
         }
     }
-    opensnackESP() {
-        //alert("OpenSnackESP");
+    opensnackESP() { // Thread to obtain JSON data from ESP microcontroller
         this.dataCollect();
     }
 

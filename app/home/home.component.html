@@ -8,6 +8,7 @@
         (tap)="dataCollect()"></ActionItem>
 </ActionBar>
 
+<!-- Menu elements -->
 <ScrollView *ngIf="menu" orientation="vertical">
 
     <FlexboxLayout flexDirection="column">
@@ -19,11 +20,7 @@
                 (tap)="pauseUI()" [checked]="pause" flexGrow="1">
             </Switch>
         </FlexboxLayout>
-        <!--
-    <Button [text]="lineGraphTime" class="menu-spacing"
-        (tap)="changeLineTime()">
-    </Button> 
-    -->
+        
         <FlexboxLayout class="menu-labels" flexDirection="row">
             <Label text="Toggle Vibration Line Graph" flexGrow="1">
             </Label>
@@ -115,11 +112,11 @@
             </TextField>
         </FlexboxLayout>
 
-
     </FlexboxLayout>
 </ScrollView>
+<!-- End of Menu Elements -->
 
-
+<!-- Data labels -->
 <StackLayout [ngClass]="!menu ? 'page' : 'page-hide'">
 
     <Label *ngIf="statusUI" [text]="statusUI" class="UI-status"> </Label>
@@ -139,6 +136,7 @@
         <Label [text]="data_db[6]" [color]="humidityStatus" flexGrow="1">
         </Label>
     </FlexboxLayout>
+<!-- End of Data Labels -->
 
     <!-- Gauge styling and sensor assigning, only enabled if "gaugeView == true" -->
     <FlexboxLayout height="75%" width="100%" flexDirection="row"
@@ -298,6 +296,7 @@
     </FlexboxLayout>
     <!-- End of gauge styling -->
 
+<!-- Line graph elements -->
     <FlexboxLayout flexDirection="column"
         [ngClass]="lineView ? 'line-graph-grid' : 'hide-graph-grid'" rows="*"
         [height]="lineGraphHeight">
@@ -385,36 +384,8 @@
             </RadLegendView>
 
         </RadCartesianChart>
-
-        <!--
-        <RadCartesianChart row="0" style="font-size: 20;">
-            <CategoricalAxis tkCartesianHorizontalAxis>
-            </CategoricalAxis>
-
-            <LinearAxis tkCartesianVerticalAxis>
-            </LinearAxis>
-
-            <LineSeries tkCartesianSeries seriesName="pressure"
-                legendTitle="Pressure series" [items]="categoricalSource2"
-                categoryProperty="time" valueProperty="pressure">
-            </LineSeries>
-
-        </RadCartesianChart>
-        <RadCartesianChart row="0" style="font-size: 20;">
-            <CategoricalAxis tkCartesianHorizontalAxis>
-            </CategoricalAxis>
-
-            <LinearAxis tkCartesianVerticalAxis>
-            </LinearAxis>
-
-            <LineSeries tkCartesianSeries seriesName="humidity"
-                legendTitle="Humidity series" [items]="categoricalSource2"
-                categoryProperty="time" valueProperty="humidity">
-            </LineSeries>
-
-        </RadCartesianChart>
-        -->
     </FlexboxLayout>
+    <!-- End of Line Elements -->
 
     <!-- Sensor labels for gauges, not needed for bar graphs due to x-axis -->
     <FlexboxLayout *ngIf="gaugeView" flexDirection="row"
@@ -425,6 +396,7 @@
         <Label text="Air Pressure" flexGrow="1"></Label>
         <Label text="Humidity" flexGrow="1"></Label>
     </FlexboxLayout>
+    <!-- End of sensor labels -->
 
     <!-- Bar graph assigning, only shown if "gaugeView == false", otherwise DOM element hidden behind other elements -->
     <GridLayout
@@ -447,6 +419,7 @@
 
         </RadCartesianChart>
     </GridLayout>
+    <!-- End of bar graph elements -->
 
     <!-- Static dock, always visible, start, view, and stop button container (tap)="startAccelerometer()"-->
     <FlexboxLayout class="dock" flexDirection="row">
