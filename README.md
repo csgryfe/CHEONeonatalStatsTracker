@@ -1,10 +1,13 @@
 # CHEO Neonatal Stats Tracker
-Fourth year project to create a real-time data communication system between a sensor cluster and mobile application.
 
-Code stored in subdirectory "/app/home"
+### Code stored in subdirectory "/app/home" ###
 
 Below is a snippet from the final report.
 
+## Problem Statement
+This project aims to measure and quantify environmental factors experienced by neonatal patients while in emergency transport. The chosen observable factors include vibration, sound, temperature, humidity, and pressure. The system put in place prior to our engagement was with extremely limited functionality and caused false data and poor use of professional’s time. Our project aims to leverage the previous work done and add functionality allowing a user to view the data real time, verify sensor outputs, and export trip data for further analysis.
+
+## Requirements
 The overarching requirements for this project are to quantify changes in the environment during transportation of neonatal patients. To accomplish this quantification of transportation data, our team set out to create a real-time patient monitoring system using a prefabricated sensor cluster and accompanying mobile application. This system would be utilized by respiratory specialists and nurses on CHEO’s neonatal transport units thus reliability of the finished product is imperative as availability in the healthcare field is a top priority. As the project is separated into three modules, which consist of hardware, the database, and the mobile application, each module contains their own set of requirements on which the leading member based their design decisions on. 
 
 ## Hardware Requirements
@@ -15,3 +18,6 @@ The second source of redundancy is within the database and is made possible sinc
 
 ## Mobile Application Requirements
 The mobile application requirement pertained solely to usability; this was essential in the design of the application since the users involve persons in high stress fast paced environments. Creating an application that did not include a simple interface and clear views of the displayed data would result in a worthless product. The reason this requirement dictates the entire application development is because this is the component which interfaces the user to the entirety of the system. Enabling the user to simply and conveniently observe and interact with real time data results in users who are more likely to be fond of the overall system and therefore not hinder any of the other important work that takes place in the situations which this would be deployed in. 
+
+## Accomplishments
+Throughout the course of this year our group has created the real time data tracking system described in our problem statement. This system has the full-fledged ability to collect sensor data, transmit to an accompanying tablet, display the information in multiple graph and chart views, and then export all the data in a formatted text file once a trip has been completed.
