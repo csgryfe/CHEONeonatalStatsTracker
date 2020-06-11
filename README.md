@@ -11,6 +11,7 @@ As the project is separated into three modules, which consist of hardware, the d
 contains their own set of requirements on which the leading member based their design decisions on. 
 
 * Hardware Requirements
+
 As system availability is paramount in any health-related electronics, the sensor firmware was developed in a way which promotes 
 data redundancy in an effort to protect any data from unforeseen losses. This was accomplished through two design decisions. 
 The first of which being, backing up all data directly on the sensor cluster as it is being collected. This is the original unedited data 
@@ -18,6 +19,7 @@ and acts as a failsafe in the event of a full system malfunction. The second des
 discussed in section 3.1.2 pertaining to the database design. 
 
 * Database Requirements
+
 The second source of redundancy is within the database and is made possible since we have chosen SQLite. The benefits to using a 
 self-hosted database like SQLite is the fact that it is hosted locally on the mobile device in which it runs. Due to locality the database 
 ties directly into the software of the application which gives it user access to the filesystem of the device. This filesystem access is 
@@ -30,6 +32,7 @@ cellular network. For this reason, the database needs to be self- hosted on the 
 requires to be backed up for later data analysis when the trip ends. 
 
 * Mobile Application Requirements
+
 The mobile application requirement pertained solely to usability; this was essential in the design of the application since the users involve 
 persons in high stress fast paced environments. Creating an application that did not include a simple interface and clear views of the 
 displayed data would result in a worthless product. The reason this requirement dictates the entire application development is because 
